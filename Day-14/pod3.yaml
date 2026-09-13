@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod3
+  labels:
+    env: prod
+spec:
+  containers:
+  - image: nginx
+    name: pod3
+  nodeName: cka-3-worker2
+

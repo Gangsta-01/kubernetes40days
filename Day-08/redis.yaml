@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deploy/redis-new
+  name: deploy/redis-new
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deploy/redis-new
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: deploy/redis-new
+    spec:
+      containers:
+      - image: redis
+        name: redis
+        resources: {}
+status: {}

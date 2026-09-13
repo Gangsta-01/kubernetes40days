@@ -1,0 +1,22 @@
+# This is the Redis-test deployment YAML
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+  labels:
+    env: test
+spec:
+  template:
+    metadata: 
+      labels: 
+        env: test
+      name: nginx
+    spec:
+      containers :
+      - image: nginx
+        name: nginx
+  replicas: 3
+  selector:
+    matchLabels:
+      env: test
