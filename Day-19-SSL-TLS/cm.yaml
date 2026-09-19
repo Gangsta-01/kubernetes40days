@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  firstname: Vaibhav
+  lastname: Katake
+kind: ConfigMap
+metadata:
+  name: cn-new
