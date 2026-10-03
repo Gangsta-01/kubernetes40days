@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ p.name }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2b3be5;
+    --paper: #eef0ff;
+    --ink: #0e1033;
+    --sun: #ffd23f;
+    --font: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: var(--font); background: var(--paper); color: var(--ink); line-height: 1.5; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+
+  .hero { background: var(--blue); color: var(--paper); min-height: 92vh; padding: 2rem 6vw 3rem;
+          display: flex; flex-direction: column; justify-content: flex-end; }
+  .name { margin: 0; font-size: clamp(3.5rem, 15vw, 13rem); line-height: .9; letter-spacing: -.03em;
+          font-variation-settings: "wght" 400, "wdth" 100; cursor: default; user-select: none; }
+  .name span { display: inline-block; white-space: pre; transition: font-variation-settings .12s linear; }
+  .role { max-width: 34ch; font-size: clamp(1.1rem, 2vw, 1.5rem); margin: 2rem 0 0; }
+  .hint { margin: 1rem 0 0; font-size: .9rem; opacity: .75; }
+
+  main { padding: 5rem 6vw; max-width: 60rem; }
+  h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 1.5rem; }
+  section + section { margin-top: 5rem; }
+  .about { font-size: 1.35rem; max-width: 40ch; margin: 0; }
+
+  .work { list-style: none; margin: 0; padding: 0; }
+  .work li { display: grid; grid-template-columns: 1fr auto; gap: .25rem 2rem; padding: 1.25rem 0;
+             border-top: 2px solid var(--ink); }
+  .work li:last-child { border-bottom: 2px solid var(--ink); }
+  .work h3 { margin: 0; font-size: 1.6rem; font-variation-settings: "wght" 500; transition: font-variation-settings .2s; }
+  .work li:hover h3 { font-variation-settings: "wght" 800; }
+  .work p { margin: 0; grid-column: 1; max-width: 50ch; }
+  .work .year { grid-row: 1; grid-column: 2; }
+
+  .contact a.mail { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 600; }
+  .links { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0 0; }
+  .btn { display: inline-block; margin-top: 2rem; padding: .8rem 1.4rem; background: var(--sun); color: var(--ink);
+         font-weight: 700; text-decoration: none; border-radius: 999px; transition: transform .15s; }
+  .btn:hover { transform: rotate(-2deg) scale(1.04); }
+  .btn.off { background: transparent; border: 2px dashed var(--ink); font-weight: 500; }
+  footer { padding: 2rem 6vw; font-size: .9rem; opacity: .7; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <h1 class="name" id="name" aria-label="{{ p.name }}">{{ p.name }}</h1>
+  <p class="role">{{ p.role }}</p>
+  <p class="hint">Move your cursor across the name.</p>
+</header>
+
+<main>
+  <section>
+    <h2>About</h2>
+    <p class="about">{{ p.about }}</p>
+  </section>
+
+  <section>
+    <h2>Selected work</h2>
+    <ul class="work">
+      {% for pr in p.projects %}
+      <li>
+        <h3>{{ pr.title }}</h3>
+        <span class="year">{{ pr.year }}</span>
+        <p>{{ pr.text }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="contact">
+    <h2>Get in touch</h2>
+    <a class="mail" href="mailto:{{ p.email }}">{{ p.email }}</a>
+    <div class="links">
+      {% for l in p.links %}<a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.label }}</a>{% endfor %}
+    </div>
+    {% if has_cv %}
+      <a class="btn" href="{{ url_for('cv') }}">Download my CV</a>
+    {% else %}
+      <span class="btn off">CV coming soon: add static/cv.pdf</span>
+    {% endif %}
+  </section>
+</main>
+
+<footer>&copy; {{ p.name }}</footer>
+
+<script>
+  // Each letter of the name gets heavier as the cursor gets closer.
+  (function () {
+    const el = document.getElementById("name");
+    const text = el.textContent;
+    el.textContent = "";
+    const letters = [...text].map(ch => {
+      const s = document.createElement("span");
+      s.textContent = ch;
+      s.setAttribute("aria-hidden", "true");
+      el.appendChild(s);
+      return s;
+    });
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const RADIUS = 280;
+    function update(x, y) {
+      letters.forEach(s => {
+        const r = s.getBoundingClientRect();
+        const d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
+        const t = Math.max(0, 1 - d / RADIUS);
+        s.style.fontVariationSettings = `"wght" ${Math.round(200 + 600 * t)}, "wdth" ${Math.round(100 - 25 * t)}`;
+      });
+    }
+    function reset() { letters.forEach(s => s.style.fontVariationSettings = ""); }
+
+    addEventListener("pointermove", e => update(e.clientX, e.clientY));
+    document.documentElement.addEventListener("pointerleave", reset);
+  })();
+</script>
+</body>
+</html>
